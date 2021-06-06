@@ -19,22 +19,20 @@ public class MoonCalculator {
     private double h; // Moon's altitude
 
     enum MoonPhase {
-        NEW, FIRST_QUARTER, HALF, THIRD_QUARTER, FULL,
+        NEW, FIRST_QUARTER, THIRD_QUARTER, FULL,
         WAXING_CRESCENT, WAXING_GIBBOUS, WANING_GIBBOUS, WANING_CRESCENT;
     }
 
     public MoonCalculator(){
         //get current date
         LocalDate date = java.time.LocalDate.now();
-        System.out.println(date);
         int year = date.getYear();
-        //int month = date.getMonthValue();
-        //int day = date.getDayOfMonth();
-        int month = 1;
-        int day = 20;
-        System.out.println("day: " + day);
-        MoonPhase phase = this.getMoonPhase(year, month, day);
-        System.out.println("Moon Phase: " + phase);
+        int month = date.getMonthValue();
+        //int month = 7;
+        int day = date.getDayOfMonth();
+        //int day = 17;
+        MoonPhase phase = this.calculateMoonPhase(year, month, day);
+        System.out.println("Moon Phase: " + phase + " day: " + day);
 
         //calculate ecl
         ecl = 23.4393 - 3.563E-7 * d;
@@ -67,7 +65,11 @@ public class MoonCalculator {
 
     }
 
-    public MoonPhase getMoonPhase(int year, int month, int day){
+    public MoonPhase calculateMoonPhase(int year, int month, int day){
+        if (month == 1 || month == 2) {
+            year--;
+            month = month + 12;
+        }
         int a = year / 100;
         int b = a / 4;
         int c = 2 - a + b;
@@ -76,28 +78,26 @@ public class MoonCalculator {
         double JD = c + day + e + f - 1524.5;
         double daysSinceNew = (JD - 2451549.5);
         double newMoons = daysSinceNew / 29.53058770576;
-        System.out.println(newMoons);
         BigDecimal bigDecimal = new BigDecimal(newMoons);
         double decimal = bigDecimal.subtract(new BigDecimal(bigDecimal.intValue())).doubleValue();
-        System.out.println(decimal);
         double daysIntoCycle = (decimal * 29.53058770576);
-        System.out.println("days into cycle: " + daysIntoCycle);
+        //System.out.println("days into cycle: " + daysIntoCycle);
 
-        if (daysIntoCycle <= 1){
+        if (daysIntoCycle < 1){
             return MoonPhase.NEW;
-        } else if (daysIntoCycle > 1 && daysIntoCycle <= 6.38) {
+        } else if (daysIntoCycle >= 1 && daysIntoCycle < 6.38) {
             return MoonPhase.WAXING_CRESCENT;
-        } else if (daysIntoCycle > 6.38 && daysIntoCycle <= 8.38){
+        } else if (daysIntoCycle >= 6.38 && daysIntoCycle < 8.38){
             return MoonPhase.FIRST_QUARTER;
-        } else if (daysIntoCycle > 8.38 && daysIntoCycle <= 13.765){
+        } else if (daysIntoCycle >= 8.38 && daysIntoCycle < 13.765){
             return MoonPhase.WAXING_GIBBOUS;
-        } else if (daysIntoCycle > 13.77 && daysIntoCycle <= 15.765) {
+        } else if (daysIntoCycle >= 13.765 && daysIntoCycle < 15.765) {
             return MoonPhase.FULL;
-        } else if (daysIntoCycle > 15.765 && daysIntoCycle <= 21.15){
+        } else if (daysIntoCycle >= 15.765 && daysIntoCycle < 21.15){
             return MoonPhase.WANING_GIBBOUS;
-        } else if (daysIntoCycle > 21.15 && daysIntoCycle <= 23.15) {
+        } else if (daysIntoCycle >= 21.15 && daysIntoCycle < 23.15) {
             return MoonPhase.THIRD_QUARTER;
-        } else if (daysIntoCycle > 23.15 && daysIntoCycle <= 29.53) {
+        } else if (daysIntoCycle >= 23.15 && daysIntoCycle < 28.53) {
             return MoonPhase.WANING_CRESCENT;
         } else {
             return MoonPhase.NEW;
@@ -105,6 +105,10 @@ public class MoonCalculator {
     }
 
     public double moonRiseTime(double RA){
+        return 0.0;
+    }
+
+    public double moonSetTime(double RA){
         return 0.0;
     }
 
