@@ -6,19 +6,16 @@ import java.time.LocalTime;
 
 public class MoonCalculator {
     //private final double sun's ecliptic longitude at the epoch
-    private final double moonIncl = 5.1453964;
+    private final double moonIncl = 5.1453964; //
     private final double w = 282.938346; //sun's ecliptic longitude at perigee at the epoch
-    private double currentLong = -118.03113; //el monte
-    private double currentLat = 34.071205; //el monte
-    private double ecl;
-    private double RA;
-    private double dec;
     private int year, month;
     private double day, time;
     private double latitude, longitude;
-    private double sunEccentricity = 0.016708; // of what?
+    private double sunEccentricity = 0.016708; // eccentricity of earth sun orbit
+    private double sunEclLong, moonEclLong;
     private DMS altitude, azimuth;
     private boolean DST;
+    private double ra, dec;
 
     enum MoonPhase {
         NEW, FIRST_QUARTER, THIRD_QUARTER, FULL,
@@ -26,19 +23,6 @@ public class MoonCalculator {
     }
 
     public MoonCalculator(int month, double day, int year, double time, double lat, double longg, boolean DST){
-        //get current date
-        //LocalDate date = java.time.LocalDate.now();
-        //LocalTime time = java.time.LocalTime.now();
-        //double hour = time.getHour();
-        //double mins = time.getMinute();
-        //double seconds = time.getSecond();
-        //double toDec = HMStoDecimal(hour, mins, seconds);
-        //double ut = LCTtoUT(toDec, currentLong);
-        //System.out.println("hr: " + hour + "min: " + mins + "sec: " + seconds);
-        //int year = date.getYear();
-        //int month = date.getMonthValue();
-        //int day = date.getDayOfMonth();
-        //year = 2015;
         this.year = year;
         this.month = month;
         this.day = day;
@@ -46,98 +30,109 @@ public class MoonCalculator {
         this.latitude = lat;
         this.longitude = longg;
         this.DST = DST;
-        double ut = LCTtoUT(this.time, longitude, DST);
-        //double fracDay = ut / 24 + day;
+        //double ut = LCTtoUT(this.time, longitude, DST);
+        double ut = 0;
         double jd = julianDate(this.year, this.month, this.day); //works!
         double GST = UTtoGST(jd, ut);
         double LST = GSTtoLST(GST, longitude);
-        //double LST = 4.562547;
         double tt = ut + (63.8 / 60 / 60);
         double fracDay = tt / 24 + this.day;
         double jdAdjusted = julianDate(this.year, this.month, fracDay); //works!
         double jd0 = julianDate(2000, 1, 1.5); //julian date for standard epoch
         double elapsedDays = jdAdjusted - jd0;
-        //System.out.println("elapsed days: " + elapsedDays);
 
         //suns ecliptic coordinates -- works
         double sunMA = 360 * elapsedDays / 365.242191 + 280.466069 - w; //deg
         if (sunMA > 360) sunMA = sunMA % 360;
-        //System.out.println("sun mean anomaly: " + sunMA);
         double sunEA = keplersEquation(sunMA); //rad
         double sunTA = Math.atan((Math.sqrt((1 + sunEccentricity) / (1 - sunEccentricity)) * Math.tan(sunEA / 2))) * 2; //rad
         if (sunTA > 2 * Math.PI) sunTA = sunTA % 2 * Math.PI;
         while (sunTA < 0) sunTA += 2 * Math.PI;
-        //System.out.println("sun true anomaly: " + Math.toDegrees(sunTA));
-        //System.out.println("sun TA in rad: " + sunTA);
-        double sunEclLong = Math.toDegrees(sunTA) + w; //deg
+        sunEclLong = Math.toDegrees(sunTA) + w; //deg
         if (sunEclLong > 360) sunEclLong = sunEclLong - 360;
-        //System.out.println("sun ecliptic longitude: " + sunEclLong);
 
         //Moon's uncorrected mean ecliptic longitude
         double moonMEL = 13.176339686 * elapsedDays + 218.316433; //deg
         if (moonMEL > 360) moonMEL = moonMEL % 360;
-        //System.out.println("Moons uncorrected mean ecliptic longitude: " + moonMEL);
 
         //Moon's uncorrected mean ecliptic longitude of the ascending node
         double omega = 125.044522 - 0.0529539 * elapsedDays;
         if (omega > 360) omega = omega % 360;
         while (omega < 0) omega = omega + 360;
-        //System.out.println("omega: " + omega);
 
         //Moon's uncorrected mean anomaly
         double moonMA = moonMEL - 0.1114041 * elapsedDays - 83.353451;
         if (moonMA > 360) moonMA = moonMA % 360;
         while (moonMA < 0) moonMA = moonMA + 360;
-        //System.out.println("Moon mean anomaly: " + moonMA);
 
         //annual equation correction
         double ae = 0.1858 * Math.sin(Math.toRadians(sunMA));
-        //System.out.println("annual equation: " + ae);
 
         //evection
         double ev = 1.2739 * Math.sin(Math.toRadians(2 * (moonMEL - sunEclLong) - moonMA)); //change to radians
-        //System.out.println("evection: " + ev);
 
         //mean anomaly corrections
         double ca = moonMA + ev - ae - 0.37 * Math.sin(sunMA); //deg
-        //System.out.println("mean anomaly correction: " + ca);
+        System.out.println("Ca:" + ca);
 
         //moons true anomaly
-        double moonTrueAnomaly = 6.2886 * Math.sin(Math.toRadians(ca)) + 0.214 * Math.sin(2 * Math.toRadians(ca)); //deg
-        //System.out.println("moon true anomaly: " + moonTrueAnomaly);
+        double moonTA = 6.2886 * Math.sin(Math.toRadians(ca)) + 0.214 * Math.sin(2 * Math.toRadians(ca)); //deg
 
         //corrected ecliptic longitude
-        double moonCEL = moonMEL + ev + moonTrueAnomaly - ae; //deg
-        //System.out.println("moons corrected ecliptic longitude: " + moonCEL);
+        double moonCEL = moonMEL + ev + moonTA - ae; //deg
 
         //variation correction
         double v = 0.6583 * Math.sin(Math.toRadians(2 * (moonCEL - sunEclLong))); //deg
-        //System.out.println("V: " + v);
 
         //moons true ecliptic longitude
         double moonTEL = Math.toRadians(moonCEL + v); //rad
-        //System.out.println("moon true ecliptic longitude: " + moonTEL);
+        System.out.println("moon true ecliptic longitude: " + Math.toDegrees(moonTEL));
 
         //corrected ecliptic longitude of the ascending node
         double correctOmega = omega - 0.16 * Math.sin(sunMA); //deg
-        //System.out.println("correct omega: " + correctOmega);
+        System.out.println("corrected omega: " + correctOmega);
 
         //moons ecliptic longitude
         double y = Math.sin(moonTEL - Math.toRadians(correctOmega)) * Math.cos(Math.toRadians(moonIncl));
         double x = Math.cos(moonTEL - Math.toRadians(correctOmega));
         double t = Math.atan(y / x); //rad
-        double moonEclLong = correctOmega + quadraticAdjust(y, x, Math.toDegrees(t));
+        moonEclLong = correctOmega + quadraticAdjust(y, x, Math.toDegrees(t));
         if (moonEclLong > 360) {
             moonEclLong = moonEclLong - 360;
         }
-        //System.out.println("moon ecliptic longitude: " + moonEclLong);
 
         //moons ecliptic latitude
         double moonEclLat = Math.toDegrees(Math.asin(Math.sin((moonTEL - Math.toRadians(correctOmega))) * Math.sin(Math.toRadians(moonIncl))));
-        //System.out.println("moon ecliptic latitude: " + moonEclLat);
+        System.out.println("Moons ecliptic latitude: " + moonEclLat);
 
         Coordinates eqCoords = eclipticToEqCoords(moonEclLat, moonEclLong);
-        //System.out.println("dec: " + eqCoords.getLat() + "  ra: " + eqCoords.getLongg());
+        System.out.println("dec:" + eqCoords.getLat() + " ra:" + eqCoords.getLongg());
+
+        ra = eqCoords.getLongg();
+        dec = eqCoords.getLat();
+
+        double st1r = calcRiseLST(ra, latitude, dec);
+        double st1s = calcSetLST(ra, latitude, dec);
+
+        //moon ecliptic lat 12 hrs later
+        double newLat = moonEclLat + 0.05 * Math.cos(Math.toRadians(moonTEL - correctOmega)) * 12;
+        System.out.println("new lat: " + newLat);
+        //moon ecliptic long 12 hrs later
+        double newLong = moonEclLong + (0.55 + 0.06 * Math.cos(Math.toRadians(ca))) * 12;
+        if (newLong > 360) { newLong = newLong - 360; }
+        System.out.println("new long: " + newLong);
+
+        //new eq coords
+        Coordinates newEqCoords = eclipticToEqCoords(newLat, newLong);
+
+        double st2r = calcRiseLST(newEqCoords.getLongg(), latitude, newEqCoords.getLat());
+        double st2s = calcSetLST(newEqCoords.getLongg(), latitude, newEqCoords.getLat());
+
+        double moonrise = interpolation(st1r, st2r);
+        System.out.println("Moonrise: " + moonrise);
+
+        double moonset = interpolation(st1s, st2s);
+        System.out.println("Moonset: " + moonset);
 
         Coordinates horizonCoords = eqToHorizonCoords(eqCoords.getLat(), eqCoords.getLongg(), latitude, LST);
         DMS h = decimalToDMS(horizonCoords.getLat());
@@ -147,8 +142,6 @@ public class MoonCalculator {
         this.azimuth = A;
         System.out.println(" || azimuth: " + A.degrees + "deg " + A.minutes + " " + A.seconds);
 
-        //MoonPhase phase = this.calculateMoonPhase(year, month, day);
-        //System.out.println("Moon Phase: " + phase + " day: " + day);
     }
 
 
@@ -158,6 +151,11 @@ public class MoonCalculator {
         return decimal;
     }
 
+    /**
+     *
+     * @param val
+     * @return
+     */
     public DMS decimalToDMS(double val) {
         int sign = 1;
         if (val < 0){
@@ -172,6 +170,13 @@ public class MoonCalculator {
         return new DMS(degrees, minutes, seconds);
     }
 
+    /**
+     *
+     * @param year
+     * @param month
+     * @param day
+     * @return
+     */
     public double julianDate(int year, int month, double day){
         if (month <= 2){
             month = month + 12;
@@ -253,6 +258,10 @@ public class MoonCalculator {
         return lst;
     }
 
+    /**
+     * calculates the angle of the ecliptic plane from the celestial equator
+     * @return angle in degrees
+     */
     public double obliquityEcliptic(){
         double jd = julianDate(2010, 1, 0);
         double centuries = (jd - 2451545) / 36525;
@@ -261,6 +270,12 @@ public class MoonCalculator {
         return obliquity;
     }
 
+    /**
+     *
+     * @param lat
+     * @param longg
+     * @return right ascension and declination in degrees
+     */
     public Coordinates eclipticToEqCoords(double lat, double longg){
         double o = Math.toRadians(obliquityEcliptic());
         lat = Math.toRadians(lat);
@@ -277,6 +292,14 @@ public class MoonCalculator {
         return c;
     }
 
+    /**
+     *
+     * @param dec
+     * @param ra
+     * @param observerLat
+     * @param LST
+     * @return altitude and azimuth in degrees
+     */
     public Coordinates eqToHorizonCoords(double dec, double ra, double observerLat, double LST) {
         double ha = LST - ra / 15;
         if (ha < 0) {
@@ -298,17 +321,6 @@ public class MoonCalculator {
 
     /**
      *
-     * @param ut
-     * @param elapsedDays since the standard epoch
-     * @return
-     */
-    public double calcSun(double ut, double elapsedDays) {
-
-        return 0;
-    }
-
-    /**
-     *
      * @param meanAnomaly
      * @return eccentric anomaly in radians(currently)
      */
@@ -324,9 +336,29 @@ public class MoonCalculator {
         return E;
     }
 
-    public void testMoon() {
-
+    public double calcRiseLST(double ra, double observerLat, double dec){
+        double riseTime = 24 + ra - Math.acos(-Math.toRadians(observerLat) * Math.toRadians(dec)) / 15;
+        return riseTime;
     }
+
+    public double calcSetLST(double ra, double observerLat, double dec){
+        double setTime = ra + Math.acos(-Math.toRadians(observerLat) * Math.toRadians(dec)) / 15;
+        return setTime;
+    }
+
+    public double interpolation(double st1, double st2){
+        return 12.03 * st1 / (12.03 + st1 - st2);
+    }
+
+/*
+    public MoonPhase moonPhase(){
+        double moonAge = (moonEclLong - sunEclLong) / 12.1907;
+        if (moonAge > 360) { moonAge = moonAge % 360; }
+        while (moonAge < 0) { moonAge += 360; }
+        //double phase = (1 - Math.cos(Math.toRadians(moonAge))) / 2;
+    }
+
+ */
 
     public MoonPhase calculateMoonPhase(int year, int month, int day){
         if (month == 1 || month == 2) {
@@ -369,11 +401,6 @@ public class MoonCalculator {
 
     public double moonRiseTime(double RA){
         //calculate moon rise and moon set
-
-        //RA = Math.atan2(ye, xe);
-        System.out.println("RA: " + RA);
-        //dec = Math.atan2(ze, Math.sqrt(xe * xe + ye * ye));
-        System.out.println("Dec: " + dec);
         return 0.0;
     }
 
@@ -389,28 +416,19 @@ public class MoonCalculator {
         } else if (y < 0 && x < 0){
             val = val + 180;
         } else return val;
-
         return val;
     }
 
-    public DMS getAltitude(){
-        return altitude;
-    }
+    public DMS getAltitude(){ return altitude; }
 
     public void printAltitude(){
         System.out.println("altitude: " + altitude.degrees + "deg " + altitude.minutes + " " + altitude.seconds);
     }
 
-    public DMS getAzimuth(){
-        return azimuth;
-    }
+    public DMS getAzimuth(){ return azimuth; }
 
     public void printAzimuth(){
         System.out.println("azimuth: " + azimuth.degrees + "deg " + azimuth.minutes + " " + azimuth.seconds);
-    }
-
-    public double moonTopocentric(double r){
-        return 0.0;
     }
 
     public static void main(String[] args){
