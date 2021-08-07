@@ -5,7 +5,7 @@ public class MoonTest {
 
     @Test
     void testHello(){
-        MoonCalculator test = new MoonCalculator();
-        Assertions.assertEquals(test.sidereal(), 0.0);
+        //MoonCalculator test = new MoonCalculator();
+        //Assertions.assertEquals(test.keplersEquation(), 0.0);
     }
 }
