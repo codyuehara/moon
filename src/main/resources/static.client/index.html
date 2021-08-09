@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Moon Calculator</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div id="main-container">
+        <!-- title -->
+        <div id="title">
+            <h1>Moon Calculator</h1>
+        </div>
+
+        <div id="graph-box">
+            <div id="data-box">
+                <h3 id="date">Date:</h3>
+                <h3 id="time">Time:</h3>
+                <h3 id="altitude">Altitude:</h3>
+                <h3 id="azimuth">Azimuth:</h3>
+                <h3 id="moon-phase">Moon Phase:</h3>
+            </div>
+        </div>
+
+
+    </div>
+
+    <!-- input box -->
+    <div id="input-box">
+        <div class="inline">
+            <h3 id="enter-lat">Latitude
+                <input type="text" id="lat">
+            </h3>
+        </div>
+        <div class="inline">
+            <h3 id="enter-long">Longitude
+                <input type="text" id="long">
+            </h3>
+        </div>
+        <div class="inline">
+            <h3 id="enter-dst">Daylight Savings
+                <input type="checkbox" id="dst">
+            </h3>
+        </div>
+        <div class="inline">
+            <button id="submit-btn">Submit</button>
+        </div>
+
+    </div>
+
+    <!-- Load the StompJS library -->
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@6.1.0/bundles/stomp.umd.js"></script>
+
+    <!-- Load our JS as a ES6 module -->
+    <script type="module" src="./js/main.js"></script>
+
+</body>
+</html>

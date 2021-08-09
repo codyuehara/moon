@@ -1,0 +1,88 @@
+html, body { margin: 0; padding: 0; height: 100%; }
+
+body {
+    background: steelblue;
+    /*
+    background: radial-gradient(aqua, steelblue);
+     */
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    padding: 25px;
+    box-sizing: border-box;
+}
+
+/* This is the container for all views.  It is designed to fill the viewport. */
+#main-container {
+    background: linear-gradient(to top, aquamarine, cornflowerblue);
+    height: 90%;
+    border: solid aqua 2px;
+    overflow: hidden;
+}
+
+#title h1 {
+    color: white;
+    text-align: center;
+    font-size: 30px;
+}
+
+#data-box {
+    height: 200px;
+    width: 150px;
+}
+
+#data-box h3 {
+    color: white;
+    margin-left: 10px;
+}
+
+#graph-box {
+    height: 560px;
+    border-bottom: solid aqua 2px;
+    top: 50%;
+}
+
+#input-box {
+    overflow: hidden;
+    background: steelblue;
+    display: flex;
+    justify-content: center;
+}
+
+#input-box .inline {
+    float: left;
+    color: white;
+    padding: 0px 30px;
+}
+
+#input-box h3 {
+    margin-top: 35px;
+}
+
+#submit-btn {
+    margin-top: 35px;
+    width: 130%;
+}
+
+/*
+#input-box h3 {
+    float: left;
+    display: block;
+    padding: 10px 30px;
+    color: white;
+}
+
+ */
+
+/*
+#input-box button {
+    margin: 25px 0px 0px 30px;
+    display: flex;
+    justify-content: center;
+    width: 150%;
+} */
+
+/*
+#submit-btn {
+    padding: 0px 30px;
+} */
+
