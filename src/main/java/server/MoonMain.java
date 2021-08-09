@@ -1,10 +1,15 @@
 package server;
 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication(scanBasePackages = {"server.controller","server.config"})
 public class MoonMain {
 
     //private static double currentLong = -118.03113; //el monte
     //private static double currentLat = 34.071205; //el monte
     public static void main (String[] args){
+        SpringApplication.run(MoonMain.class, args);
         //get current date
         //LocalDate date = java.time.LocalDate.now();
         //LocalTime time = java.time.LocalTime.now();
