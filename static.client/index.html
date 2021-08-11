@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Moon Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.0/dist/chart.min.js"></script>
+</head>
+<body>
+    <!-- title -->
+    <div id="title">
+        <h1>Moon Calculator</h1>
+    </div>
+
+    <div id="main-container">
+        <div id="graph-box">
+            <h3 id="date">Date:</h3>
+            <h3 id="moon-phase">Moon Phase:</h3>
+            <h3 id="illumination">Illumination:</h3>
+            <canvas id="myChart" width="400" height="150"></canvas>
+        </div>
+    </div>
+
+    <!-- input box -->
+    <div id="input-box">
+        <div class="inline">
+            <h3 id="enter-lat">Latitude (Negative for South):
+                <label for="lat"></label><input type="text" id="lat">
+            </h3>
+        </div>
+        <div class="inline">
+            <h3 id="enter-long">Longitude (Negative for West):
+                <label for="long"></label><input type="text" id="long">
+            </h3>
+        </div>
+        <div class="inline">
+            <h3 id="enter-dst">Daylight Savings:
+                <input type="checkbox" id="dst">
+            </h3>
+        </div>
+        <div class="inline">
+            <button id="submit-btn">Submit</button>
+        </div>
+
+    </div>
+
+    <!-- Load our JS as a ES6 module -->
+    <script type="module" src="./js/main.js"></script>
+
+</body>
+</html>

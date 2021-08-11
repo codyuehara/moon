@@ -1,7 +1,7 @@
 html, body { margin: 0; padding: 0; height: 100%; }
 
 body {
-    background: steelblue;
+    background: #3061c3;
     /*
     background: radial-gradient(aqua, steelblue);
      */
@@ -13,37 +13,33 @@ body {
 
 /* This is the container for all views.  It is designed to fill the viewport. */
 #main-container {
-    background: linear-gradient(to top, aquamarine, cornflowerblue);
-    height: 90%;
-    border: solid aqua 2px;
+    background: linear-gradient(to top, #b1eeff, #3061c3);
+    height: 85%;
+    border: solid white 2px;
     overflow: hidden;
 }
 
 #title h1 {
     color: white;
+    margin-top: -5px;
     text-align: center;
     font-size: 30px;
 }
 
-#data-box {
-    height: 200px;
-    width: 150px;
-}
-
-#data-box h3 {
+#graph-box h3 {
     color: white;
     margin-left: 10px;
+    size: 20px;
 }
 
 #graph-box {
     height: 560px;
-    border-bottom: solid aqua 2px;
     top: 50%;
 }
 
 #input-box {
     overflow: hidden;
-    background: steelblue;
+    background: #3061c3;
     display: flex;
     justify-content: center;
 }
@@ -51,15 +47,15 @@ body {
 #input-box .inline {
     float: left;
     color: white;
-    padding: 0px 30px;
+    padding: 0 30px;
 }
 
 #input-box h3 {
-    margin-top: 35px;
+    margin-top: 30px;
 }
 
 #submit-btn {
-    margin-top: 35px;
+    margin-top: 30px;
     width: 130%;
 }
 
