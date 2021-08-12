@@ -17,7 +17,7 @@
             <h3 id="date">Date:</h3>
             <h3 id="moon-phase">Moon Phase:</h3>
             <h3 id="illumination">Illumination:</h3>
-            <canvas id="myChart" width="400" height="150"></canvas>
+            <canvas id="myChart" width="400" height="140"></canvas>
         </div>
     </div>
 
@@ -27,11 +27,13 @@
             <h3 id="enter-lat">Latitude (Negative for South):
                 <label for="lat"></label><input type="text" id="lat">
             </h3>
+            <h3 id="lat-error"></h3>
         </div>
         <div class="inline">
             <h3 id="enter-long">Longitude (Negative for West):
                 <label for="long"></label><input type="text" id="long">
             </h3>
+            <h3 id="long-error"></h3>
         </div>
         <div class="inline">
             <h3 id="enter-dst">Daylight Savings:
@@ -41,8 +43,13 @@
         <div class="inline">
             <button id="submit-btn">Submit</button>
         </div>
+        <div>
+            <h3 id="error"></h3>
+        </div>
 
     </div>
+
+
 
     <!-- Load our JS as a ES6 module -->
     <script type="module" src="./js/main.js"></script>

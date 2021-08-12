@@ -5,27 +5,34 @@ export class MoonView {
     month;
     day;
     year;
+    myChart;
 
     constructor() {
-        //this.m = new MoonCalculator(34, -118, true);
-        //this.m = new MoonCalculator(30, -95, true);
         let count = 0;
         this.submitBtnEl = document.getElementById('submit-btn');
         this.submitBtnEl.addEventListener('click', (e) => {
             console.log("Click");
+            if (this.myChart != null){
+                this.myChart.destroy();
+            }
             const latEl = document.getElementById('lat');
             const lat = latEl.value;
             const longEl = document.getElementById('long');
             const long = longEl.value;
             const dstEl = document.getElementById('dst');
             const dst = dstEl.value;
-            this.m = new MoonCalculator(lat, long, dst);
-            this.getDate();
-            this.drawChart();
-            this.moonPhase();
-            count++;
+            const error = document.getElementById('error');
+            if (lat < -180 || lat > 180 || long < -180 || long > 180){
+                error.innerHTML = "Input Error";
+            } else {
+                error.innerHTML = "";
+                this.m = new MoonCalculator(lat, long, dst);
+                this.getDate();
+                this.drawChart();
+                this.moonPhase();
+            }
 
-            //this.calculateMoon();
+            count++;
         });
 
     }
@@ -34,7 +41,10 @@ export class MoonView {
         this.m.calcMoon(this.month, this.day, this.year, 12);
         const phase = document.getElementById('moon-phase');
         phase.innerHTML = "Moon Phase: " + this.m.moonPhase();
+        const illumination = document.getElementById('illumination');
+        illumination.innerHTML = "Illumination: " + this.m.illumination + "%";
     }
+
 
     getDate(){
         let currentDate = new Date();
@@ -49,18 +59,32 @@ export class MoonView {
         const altitude = [];
         const azimuth = [];
         const time = [];
+        let hr = 12;
+        let timeOfDay = "am";
+        let mins = -1;
 
         for (let i = 0; i < 1440; i++) {
             const ut = i / 60;
             this.m.calcMoon(this.month, this.day, this.year, ut);
-            time.push(ut);
+            if (hr == 13){ hr = 1;}
+            mins++;
+            if (mins == 60){
+                mins = 0;
+                hr += 1;
+            }
+            if (i === 719){ timeOfDay = "pm"; }
+            if (mins < 10){
+                let singleDigit = "0" + mins;
+                time.push(hr + ":" + singleDigit + " " + timeOfDay);
+            } else {
+                time.push(hr + ":" + mins + " " + timeOfDay);
+            }
             altitude.push(this.m.altitude);
             azimuth.push(this.m.azimuth);
         }
         //CONVERT UT TO LCT
-        console.log(altitude);
         var ctx = document.getElementById('myChart').getContext('2d');
-        var myChart = new Chart(ctx, {
+        this.myChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: time,
@@ -68,12 +92,19 @@ export class MoonView {
                     label: 'altitude',
                     data: altitude,
                     fill: false,
-                    borderColor: 'rgb(255, 255, 255)'
-                }]
+                    backgroundColor: 'rgb(255, 255, 255)',
+                    borderColor: 'rgb(255, 255, 255)',
+                    borderWidth: 0
+                }],
             },
             options: {
-                labels: {
-
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index'
+                    }
                 },
                 scales: {
                     yAxis: {
@@ -84,6 +115,7 @@ export class MoonView {
                         }
                     },
                     xAxis: {
+                        display: false,
                         grid: {
                             display: false
                         }
@@ -91,11 +123,6 @@ export class MoonView {
                 }
             }
         });
-
     }
 
-    resetCanvas(){
-        $('myChart').remove();
-
-    }
 }

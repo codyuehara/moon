@@ -5,6 +5,7 @@ export class MoonCalculator {
     day;
     moonTEL;
     sunEclLong;
+    illumination;
 
     constructor(latitude, longitude, DST) {
         this.latitude = latitude;
@@ -20,7 +21,6 @@ export class MoonCalculator {
         let month = m;
         this.day = d;
         let year = yr;
-        this.time = time;
         let ut = this.LCTtoUT(time);
         let jd = this.julianDate(year, month, this.day); //works!
         let GST = this.UTtoGST(jd, ut, year);
@@ -41,8 +41,8 @@ export class MoonCalculator {
         let sunTA = Math.atan((Math.sqrt((1 + e) / (1 - e)) * Math.tan(sunEA / 2))) * 2; //rad
         if (sunTA > 2 * Math.PI) sunTA = sunTA % 2 * Math.PI;
         while (sunTA < 0) sunTA += 2 * Math.PI;
-        let sunEclLong = this.toDegrees(sunTA) + w; //deg
-        if (sunEclLong > 360) sunEclLong = sunEclLong - 360;
+        this.sunEclLong = this.toDegrees(sunTA) + w; //deg
+        if (this.sunEclLong > 360) this.sunEclLong = this.sunEclLong - 360;
         //console.log("sun ecl long: " + sunEclLong);
 
         //Moon's uncorrected mean ecliptic longitude
@@ -63,7 +63,7 @@ export class MoonCalculator {
         let ae = 0.1858 * Math.sin(this.toRadians(sunMA));  //deg
 
         //evection
-        let ev = 1.2739 * Math.sin(this.toRadians(2 * (moonMEL - sunEclLong) - moonMA)); //change to radians
+        let ev = 1.2739 * Math.sin(this.toRadians(2 * (moonMEL - this.sunEclLong) - moonMA)); //change to radians
 
         //mean anomaly corrections
         let ca = moonMA + ev - ae - 0.37 * Math.sin(this.toRadians(sunMA)); //deg
@@ -75,17 +75,17 @@ export class MoonCalculator {
         let moonCEL = moonMEL + ev + moonTA - ae; //deg
 
         //variation correction
-        let v = 0.6583 * Math.sin(this.toRadians(2 * (moonCEL - sunEclLong))); //deg
+        let v = 0.6583 * Math.sin(this.toRadians(2 * (moonCEL - this.sunEclLong))); //deg
 
         //moons true ecliptic longitude
-        let moonTEL = moonCEL + v; //Math.toRadians(moonCEL + v); //deg
+        this.moonTEL = moonCEL + v; //Math.toRadians(moonCEL + v); //deg
 
         //corrected ecliptic longitude of the ascending node
         let moonCELAN = moonMELAN - 0.16 * Math.sin(this.toRadians(sunMA)); //deg
 
         //moons ecliptic longitude
-        let y = Math.sin(this.toRadians(moonTEL) - this.toRadians(moonCELAN)) * Math.cos(this.toRadians(moonIncl));
-        let x = Math.cos(this.toRadians(moonTEL) - this.toRadians(moonCELAN));
+        let y = Math.sin(this.toRadians(this.moonTEL) - this.toRadians(moonCELAN)) * Math.cos(this.toRadians(moonIncl));
+        let x = Math.cos(this.toRadians(this.moonTEL) - this.toRadians(moonCELAN));
         let t = Math.atan(y / x); //rad
         let moonEclLong = moonCELAN + this.quadraticAdjust(y, x, this.toDegrees(t));    //deg
         if (moonEclLong > 360) {
@@ -93,19 +93,15 @@ export class MoonCalculator {
         }
 
         //moons ecliptic latitude
-        let moonEclLat = this.toDegrees(Math.asin(Math.sin((this.toRadians(moonTEL) - this.toRadians(moonCELAN))) * Math.sin(this.toRadians(moonIncl))));
+        let moonEclLat = this.toDegrees(Math.asin(Math.sin((this.toRadians(this.moonTEL) - this.toRadians(moonCELAN))) * Math.sin(this.toRadians(moonIncl))));
         let eqCoords = this.eclipticToEqCoords(moonEclLat, moonEclLong);
         let dec = eqCoords[0];
         let ra = eqCoords[1];
         //console.log("ra: " + ra + " || dec: " + dec);
 
         let horizonCoords = this.eqToHorizonCoords(dec, ra, this.latitude, LST);
-        let h = this.decimalToDeg(horizonCoords[0]);
-        this.altitude = h;
-        let a = this.decimalToDeg(horizonCoords[1]);
-        this.azimuth = a;
-        //console.log("altitude: " + h + " || azimuth: " + a);
-
+        this.altitude = this.decimalToDeg(horizonCoords[0]);
+        this.azimuth = this.decimalToDeg(horizonCoords[1]);
     }
 
     HMStoDecimal(hours, mins, secs) {
@@ -221,7 +217,24 @@ export class MoonCalculator {
     }
 
     UTtoLCT(ut){
-
+        let adjust = Math.round(this.longitude / 15);
+        let lct = ut + adjust;
+        console.log(lct);
+        if (this.DST){
+            lct += 1;
+        }
+        lct = Math.abs(lct);
+        let hours = Math.trunc(lct);
+        let frac = lct - Math.trunc(lct);
+        let minutes = Math.trunc(60 * frac);
+        let seconds = Math.trunc(60 * ((60 * frac) - minutes));
+        if (seconds > 30) {
+            minutes += 1;
+        }
+        if (minutes > 30) {
+            hours += 1;
+        }
+        return hours + ":" + minutes;
     }
 
 
@@ -308,7 +321,6 @@ export class MoonCalculator {
         while (a < 0) {
             a += 360;
         }
-        console.log(a);
         let moonAge = a / 12.1907;
         if (moonAge > 360) {
             moonAge = moonAge % 360;
@@ -316,7 +328,7 @@ export class MoonCalculator {
         while (moonAge < 0) {
             moonAge += 360;
         }
-        //let phase = (1 - Math.cos(this.toRadians(a))) / 2;
+        this.illumination = (100 * ((1 - Math.cos(this.toRadians(a))) / 2)).toFixed(1);
         if (a < 22.5) {
             return "New";
         } else if (a >= 22.5 && a < 67.5) {
